@@ -13,8 +13,14 @@ register("namespace", () => {});
 
 expose(module);
 expose(["fn"]);
+expose<typeof module>(["fn"]);
+
+// @ts-expect-error
+expose<typeof module>(["unknown"]);
+
 expose("namespace", module);
 expose("namespace", ["fn"]);
+expose<typeof module>("namespace", ["fn", "noop"]);
 
 const { fn, noop } = connect<typeof module>();
 fn().then((value) => value.trim());

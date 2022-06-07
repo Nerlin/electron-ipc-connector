@@ -5,9 +5,9 @@ const $ipc: Record<string, Function | Namespace> = {};
 
 type Namespace = Record<string, Function>;
 
-export function register<T>(namespace: Namespace): void;
-export function register<T>(namespace: string, functions: Namespace): void;
-export function register<T>(
+export function register(namespace: Namespace): void;
+export function register(namespace: string, functions: Namespace): void;
+export function register(
   namespace: string | Namespace,
   functions?: Namespace
 ): void {
@@ -22,21 +22,21 @@ export function register<T>(
   }
 }
 
-export function expose<T>(namespace: Namespace | string[]): void;
-export function expose<T>(
+export function expose<T extends Namespace>(namespace: Namespace | (keyof T)[]): void;
+export function expose<T extends Namespace>(
   namespace: string,
-  functions: Namespace | string[]
+  functions: Namespace | (keyof T)[]
 ): void;
-export function expose<T>(
-  namespace: string | Namespace | string[],
-  functions?: Namespace | string[]
+export function expose<T extends Namespace>(
+  namespace: string | Namespace | (keyof T)[],
+  functions?: Namespace | (keyof T)[]
 ): void {
   if (typeof namespace === "object") {
     functions = namespace;
     namespace = "";
   }
 
-  for (const [name, fn] of Object.entries(functions!)) {
+  for (const name of Object.keys(functions!)) {
     const channel = namespace ? `${namespace}:${name}` : name;
     const invoker = (...args: any[]) => ipcRenderer.invoke(channel, ...args);
     if (namespace) {

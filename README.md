@@ -1,4 +1,4 @@
-# ipc-connector
+# electron-ipc-connector
 
 This is a module to reduce Electron boilerplate needed to expose functions from the main process to renderer processes.
 
@@ -37,7 +37,7 @@ export async function createMainWindow() {
   // register all callbacks that you want to expose from the main process.
   
   // Keep in mind name collisions.
-  // We don't recommend registering and exposing whole NodeJS modules for security reasons.
+  // It's not recommended to register and expos whole NodeJS modules for security reasons.
   register(fs);
   register(path);
   
