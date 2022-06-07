@@ -21,7 +21,9 @@ export function register(
   }
 }
 
-export function expose<T extends Namespace>(namespace: Namespace | (keyof T)[]): void;
+export function expose<T extends Namespace>(
+  namespace: Namespace | (keyof T)[]
+): void;
 export function expose<T extends Namespace>(
   namespace: string,
   functions: Namespace | (keyof T)[]
@@ -49,8 +51,13 @@ export function expose<T extends Namespace>(
 }
 
 type Callback = (...args: any[]) => any;
+
 export type ConnectResult<T extends Record<string, Callback>> = {
-  [K in keyof T]: (...args: Parameters<T[K]>) => Promise<ReturnType<T[K]>>;
+  [K in keyof T]: (
+    ...args: Parameters<T[K]>
+  ) => ReturnType<T[K]> extends PromiseLike<infer R>
+    ? ReturnType<T[K]>
+    : Promise<ReturnType<T[K]>>;
 };
 
 export function connect<T extends Record<string, Callback>>(
