@@ -1,8 +1,9 @@
 import { contextBridge, ipcMain, ipcRenderer } from "electron";
 
-const $ipc: Record<string, Function | Namespace> = {};
+const $ipc: Registry = {};
 
 type Namespace = Record<string, Function>;
+type Registry = Record<string, Function | Namespace>;
 
 export function register(namespace: Namespace): void;
 export function register(namespace: string, functions: Namespace): void;
@@ -16,38 +17,48 @@ export function register(
   }
 
   for (const [name, fn] of Object.entries(functions!)) {
+    if (typeof fn !== "function") {
+      continue;
+    }
     const channel = namespace ? `${namespace}:${name}` : name;
     ipcMain.handle(channel, (event, ...args) => fn(...args));
   }
 }
 
-export function expose<T extends Namespace>(
-  namespace: Namespace | (keyof T)[]
-): void;
-export function expose<T extends Namespace>(
-  namespace: string,
-  functions: Namespace | (keyof T)[]
-): void;
-export function expose<T extends Namespace>(
-  namespace: string | Namespace | (keyof T)[],
-  functions?: Namespace | (keyof T)[]
+export function expose<T extends Namespace>(functions: (keyof T)[] | Namespace): void;
+export function expose<T extends Registry>(functions: T): void;
+export function expose<T>(
+  functions: (keyof T)[] | Namespace | T
 ): void {
-  if (typeof namespace === "object") {
-    functions = namespace;
-    namespace = "";
-  }
-
-  for (const name of Object.keys(functions!)) {
-    const channel = namespace ? `${namespace}:${name}` : name;
-    const invoker = (...args: any[]) => ipcRenderer.invoke(channel, ...args);
-    if (namespace) {
-      $ipc[namespace] = { ...$ipc[namespace], [name]: invoker };
-    } else {
-      $ipc[name] = invoker;
+  if (functions instanceof Array) {
+    for (const name of functions) {
+      exposeFn(String(name));
+    }
+  } else {
+    for (const [name, value] of Object.entries(functions)) {
+      if (typeof value === "object") {
+        for (const [fnName, fn] of Object.entries(value)) {
+          if (typeof fn === "function") {
+            exposeFn(fnName, name);
+          }
+        }
+      } else if (typeof value === "function") {
+        exposeFn(name);
+      }
     }
   }
 
   contextBridge.exposeInMainWorld("$ipc", $ipc);
+}
+
+function exposeFn(name: string, namespace?: string) {
+  const channel = namespace ? `${namespace}:${name}` : name;
+  const invoker = (...args: any[]) => ipcRenderer.invoke(channel, ...args);
+  if (namespace) {
+    $ipc[namespace] = { ...$ipc[namespace], [name]: invoker };
+  } else {
+    $ipc[name] = invoker;
+  }
 }
 
 type Callback = (...args: any[]) => any;

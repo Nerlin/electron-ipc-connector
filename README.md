@@ -43,14 +43,16 @@ export async function createMainWindow() {
   
   // You can register functions for specific namespaces to avoid name collisions.
   register("my-namespace", {
-    helloWorld() {
-      return "Hello, world!";
-    }
+    helloWorld
   });
   
   // Start loading the renderer process.
   // This will run the preload script.
   await mainWindow.loadURL(`file://${__dirname}/public/index.html`);
+}
+
+function helloWorld() {
+  return "Hello, world!";
 }
 ```
 
@@ -60,15 +62,17 @@ export async function createMainWindow() {
 import { expose } from "electron-ipc-connector";
 import fs from "fs/promises";
 import path from "path";
+import { helloWorld } from "./main";
 
-// You have to expose the same functions in the preload script
-// to generate ipcRenderer invoke calls.
-expose(fs);
-expose(path);
-
-// Since the actual implementation is not used in the preload script,
-// you can simply specify function names that you want to expose from the namespace.
-expose("my-namespace", ["helloWorld"]);
+// You have to call `expose` once in the preload script with all functions and namespaces 
+// that you want to use from the renderer process.
+expose({
+  fs,
+  path,
+  "my-namespace": {
+    helloWorld
+  }
+})
 ```
 
 *app.js*
@@ -87,5 +91,4 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Prints "Hello, world!"
   console.log(message);
 });
-
 ```
