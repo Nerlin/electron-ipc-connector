@@ -1,5 +1,4 @@
 import { contextBridge, ipcMain, ipcRenderer } from "electron";
-import "./global";
 
 const $ipc: Record<string, Function | Namespace> = {};
 
