@@ -1,10 +1,14 @@
 import type { IpcMainInvokeEvent } from "electron";
 
-const $ipc: Registry = {};
+let registry: Registry = {};
+let attached = false;
 
 type Callback = (...args: any[]) => any;
 type Namespace = Record<string, Callback>;
 type Registry = Record<string, Callback | Namespace>;
+type RegisteredNames = Array<FunctionName | [NamespaceName, FunctionName[]]>;
+type FunctionName = string;
+type NamespaceName = string;
 
 export function register(namespace: Namespace): void;
 export function register(namespace: string, functions: Namespace): void;
@@ -15,10 +19,13 @@ export function register(
   if (typeof namespace === "object") {
     functions = namespace;
     namespace = "";
+
+    registry = {...registry, ...functions};
+  } else if (functions) {
+    registry[namespace] = functions;
   }
 
   const { ipcMain } = require("electron");
-
   for (const [name, fn] of Object.entries(functions!)) {
     if (typeof fn !== "function") {
       continue;
@@ -29,44 +36,60 @@ export function register(
       (event: IpcMainInvokeEvent, ...args: Parameters<typeof fn>) => fn(...args)
     );
   }
+
+  if (!attached) {
+    ipcMain.on("$ipc-sync", (event) => {
+      const names: RegisteredNames = [];
+      for (const [name, value] of Object.entries(registry)) {
+        if (typeof value === "object") {
+          const namespace: string[] = [];
+          for (const [fnName, fn] of Object.entries(value)) {
+            if (typeof fn === "function") {
+              namespace.push(fnName);
+            }
+          }
+          names.push([name, namespace]);
+        } else {
+          names.push(name);
+        }
+      }
+      event.returnValue = JSON.stringify(names);
+    });
+    attached = true;
+  }
 }
 
-export function expose<T extends Namespace>(
-  functions: (keyof T)[] | Namespace
-): void;
-export function expose<T extends Registry>(functions: T): void;
-export function expose<T>(functions: (keyof T)[] | Namespace | T): void {
-  if (functions instanceof Array) {
-    for (const name of functions) {
-      exposeFn(String(name));
-    }
-  } else {
-    for (const [name, value] of Object.entries(functions)) {
-      if (typeof value === "object") {
-        for (const [fnName, fn] of Object.entries(value)) {
-          if (typeof fn === "function") {
-            exposeFn(fnName, name);
-          }
-        }
-      } else if (typeof value === "function") {
-        exposeFn(name);
+export function expose(): void {
+  const { contextBridge, ipcRenderer } = require("electron");
+
+  const json = ipcRenderer.sendSync("$ipc-sync");
+  const names: RegisteredNames = JSON.parse(json);
+  const ipc: Registry = {};
+
+  for (const name of names) {
+    if (typeof name === "string") {
+      exposeFn(ipc, name);
+    } else if (typeof name === "object") {
+      const [namespace, functions] = name;
+      for (const fnName of functions) {
+        exposeFn(ipc, fnName, namespace);
       }
     }
   }
 
-  const { contextBridge } = require("electron");
-  contextBridge.exposeInMainWorld("$ipc", $ipc);
+  contextBridge.exposeInMainWorld("$ipc", ipc);
 }
 
-function exposeFn(name: string, namespace?: string) {
+
+function exposeFn(ipc: Registry, name: string, namespace?: string) {
   const channel = namespace ? `${namespace}:${name}` : name;
   const { ipcRenderer } = require("electron");
 
   const invoker = (...args: any[]) => ipcRenderer.invoke(channel, ...args);
   if (namespace) {
-    $ipc[namespace] = { ...$ipc[namespace], [name]: invoker };
+    ipc[namespace] = { ...ipc[namespace], [name]: invoker };
   } else {
-    $ipc[name] = invoker;
+    ipc[name] = invoker;
   }
 }
 

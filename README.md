@@ -64,15 +64,8 @@ import fs from "fs/promises";
 import path from "path";
 import { helloWorld } from "./main";
 
-// You have to call `expose` once in the preload script with all functions and namespaces 
-// that you want to use from the renderer process.
-expose({
-  fs,
-  path,
-  "my-namespace": {
-    helloWorld
-  }
-})
+// You have to call `expose` once in the preload script to attach registered functions to the renderer process.
+expose()
 ```
 
 *app.js*

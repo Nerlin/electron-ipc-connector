@@ -1,4 +1,4 @@
-import { connect, expose, register } from "./index";
+import { connect, register } from "./index";
 
 const module = {
   fn: () => "value",
@@ -11,34 +11,6 @@ register("namespace", module);
 
 // @ts-expect-error
 register("namespace", () => {});
-
-expose(module);
-expose(["fn"]);
-expose<typeof module>(["fn", "noop"]);
-
-// @ts-expect-error
-expose<typeof module>(["unknown"]);
-expose({
-  namespace: module,
-});
-expose<{ namespace: typeof module }>({
-  namespace: {
-    fn: module.fn,
-    query: module.query,
-    noop: module.noop,
-  },
-});
-expose<{ namespace: typeof module }>({
-  // @ts-expect-error
-  namespace: {
-    fn: module.fn,
-    query: module.query,
-  },
-});
-expose({
-  module,
-  namespace: module,
-});
 
 const { fn, noop, query } = connect<typeof module>();
 fn().then((value) => value.trim());
