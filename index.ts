@@ -10,7 +10,7 @@ type Registry = Record<string, Callback | EventEmitter | Namespace>;
 type RendererRegistry = Record<string, Callback | IpcEventEmitter | RendererNamespace>;
 type RendererNamespace = Record<string, Callback | IpcEventEmitter>;
 
-interface IpcEventEmitter {
+export interface IpcEventEmitter {
   on(event: string, listener: Callback): RemoveEventListener;
   once(event: string, listener: Callback): RemoveEventListener;
 }
