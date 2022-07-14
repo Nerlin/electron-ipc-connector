@@ -4,7 +4,7 @@ This is a module to reduce Electron boilerplate needed to expose functions from 
 
 ## Install
 
-`npm install electron-ipc-renderer`
+`npm install electron-ipc-connector`
 
 
 ## Usage
