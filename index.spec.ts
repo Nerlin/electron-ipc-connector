@@ -1,5 +1,6 @@
-import { connect, register } from "./index";
+import { register } from "./index";
 import EventEmitter from "events";
+import { connect } from "./browser";
 
 const module = {
   fn: () => "value",

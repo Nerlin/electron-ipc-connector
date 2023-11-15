@@ -101,11 +101,13 @@
     "skipLibCheck": true                                 /* Skip type checking all .d.ts files. */
   },
   "include": [
+    "browser.ts",
     "index.ts",
     "index.spec.ts",
     "global.d.ts",
   ],
   "files": [
+    "browser.ts",
     "index.ts",
     "global.d.ts",
   ]
