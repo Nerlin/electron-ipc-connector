@@ -1,15 +1,26 @@
 {
   "name": "electron-ipc-connector",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "Utilities for type-safe interprocess communication in electron.",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
   "repository": "https://github.com/Nerlin/electron-ipc-connector",
   "scripts": {
     "build": "tsc",
     "prepare": "npm run build"
   },
-  "keywords": ["electron", "ipc"],
+  "main": "index.js",
+  "types": "index.d.ts",
+  "files": [
+    "src",
+    "browser.d.ts",
+    "browser.js",
+    "index.d.ts",
+    "index.js",
+    "tsconfig.json"
+  ],
+  "keywords": [
+    "electron",
+    "ipc"
+  ],
   "author": "Nerlin",
   "license": "MIT",
   "peerDependencies": {

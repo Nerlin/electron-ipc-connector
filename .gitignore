@@ -1,4 +1,12 @@
-dist
+index.js
+index.d.ts
+
+browser.js
+browser.d.ts
+
+index.spec.js
+index.spec.d.ts
+
 .idea
 .vscode
 node_modules
