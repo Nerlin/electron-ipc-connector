@@ -1,9 +1,8 @@
 {
   "name": "electron-ipc-connector",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "Utilities for type-safe interprocess communication in electron.",
   "main": "dist/index.js",
-  "browser": "dist/browser.js",
   "types": "dist/index.d.ts",
   "repository": "https://github.com/Nerlin/electron-ipc-connector",
   "scripts": {

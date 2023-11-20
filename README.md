@@ -81,7 +81,7 @@ expose()
 *app.js*
 
 ```typescript
-import { connect } from "electron-ipc-connector";
+import { connect } from "electron-ipc-connector/browser";
 
 // Get functions to communicate with my-namespace in the main process.
 // This callback returns a promise with resolved values 
